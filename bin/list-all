@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+releases_path=https://api.github.com/repos/arminc/clair-scanner/releases
+cmd="curl -s"
+if [ -n "$GITHUB_API_TOKEN" ]; then
+  cmd="$cmd -H 'Authorization: token $GITHUB_API_TOKEN'"
+fi
+
+cmd="$cmd $releases_path"
+
+function sort_versions() {
+  sed 'h; s/[+-]/./g; s/.p\([[:digit:]]\)/.z\1/; s/$/.z/; G; s/\n/ /' | \
+    LC_ALL=C sort -nr | awk '{print $2}'
+}
+
+echo $(eval "$cmd" | grep -oE "tag_name\": \".{1,15}\"," | sed 's/tag_name\": \"v//;s/\",//' | sort_versions)
